@@ -1,0 +1,40 @@
+name: build diagnostic package
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: brew install ldid make
+
+      - name: Set up Theos
+        run: |
+          git clone --recursive --depth 1 https://github.com/theos/theos.git "$GITHUB_WORKSPACE/theos"
+          echo "THEOS=$GITHUB_WORKSPACE/theos" >> "$GITHUB_ENV"
+          echo "$(brew --prefix)/opt/make/libexec/gnubin" >> "$GITHUB_PATH"
+
+      - name: Build packages
+        run: |
+          set -e
+          mkdir -p packages
+          make clean
+          make package FINALPACKAGE=1
+          make clean
+          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1
+          find packages -name '*.deb' -exec dpkg-deb --info {} \;
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: DD11.05-diagnostic-deb
+          path: packages/*.deb
+          if-no-files-found: error
