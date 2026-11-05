@@ -1,0 +1,9 @@
+Package: com.dd.diagnostics
+Name: DD Stability Diagnostics
+Version: 11.05.0
+Architecture: iphoneos-arm
+Description: Minimal startup diagnostics for compatibility and stability testing; does not alter app behavior.
+Maintainer: DD
+Author: DD
+Section: Tweaks
+Depends: mobilesubstrate
